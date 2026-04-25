@@ -1,5 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { getAllVideos, saveVideoToDB, clearDB } from './App';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom/vitest';
+import App, { getAllVideos, saveVideoToDB, clearDB } from './App';
 import 'fake-indexeddb/auto';
 
 describe('Database functions', () => {
@@ -51,5 +54,23 @@ describe('Database functions', () => {
     // We check that both are returned
     const sizes = videos.map(v => v.size).sort();
     expect(sizes).toEqual([1, 2]);
+  });
+});
+
+describe('App component', () => {
+  it('handles initCamera error', async () => {
+    // Mock navigator.mediaDevices
+    Object.defineProperty(global.navigator, 'mediaDevices', {
+      value: {
+        getUserMedia: vi.fn().mockRejectedValue(new Error('Permission denied')),
+      },
+      writable: true,
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText('請允許相機與麥克風權限以繼續使用。')).toBeInTheDocument();
+    });
   });
 });
