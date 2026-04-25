@@ -280,7 +280,7 @@ export default function App() {
       const stats = await getDatabaseStats();
       setDbStats(stats);
     } catch (e) {
-      console.warn('Failed to update DB stats:', e);
+      console.error('Failed to update DB stats:', e);
     }
   };
 

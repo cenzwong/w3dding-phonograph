@@ -3,13 +3,6 @@ import { getAllVideos, saveVideoToDB, clearDB, initDB } from './App';
 import 'fake-indexeddb/auto';
 
 describe('initDB', () => {
-  it('should resolve with a valid database instance containing the correct object store', async () => {
-    const db = await initDB() as IDBDatabase;
-    expect(db).toBeDefined();
-    expect(db.name).toBe('WeddingBoothDB');
-    expect(db.objectStoreNames.contains('videos')).toBe(true);
-  });
-
   it('should reject when indexedDB.open fails', async () => {
     const testError = new Error('Simulated database error');
 
@@ -28,6 +21,13 @@ describe('initDB', () => {
     } finally {
       spy.mockRestore();
     }
+  });
+
+  it('should resolve with a valid database instance containing the correct object store', async () => {
+    const db = await initDB() as IDBDatabase;
+    expect(db).toBeDefined();
+    expect(db.name).toBe('WeddingBoothDB');
+    expect(db.objectStoreNames.contains('videos')).toBe(true);
   });
 });
 
