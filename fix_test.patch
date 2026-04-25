@@ -1,0 +1,15 @@
+--- App.test.tsx
++++ App.test.tsx
+@@ -10,8 +10,12 @@
+   });
+
+   it('should reject when indexedDB.open fails', async () => {
++    vi.resetModules();
++    const { initDB } = await import('./App');
+     const testError = new Error('Simulated database error');
+
++    // reset db promise before test
++    await import('./App').then(m => m.resetDBPromise && m.resetDBPromise());
+     const spy = vi.spyOn(indexedDB, 'open').mockImplementation(() => {
+       const request: any = { error: testError };
+       setTimeout(() => {
