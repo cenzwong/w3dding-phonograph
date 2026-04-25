@@ -56,6 +56,31 @@ export const getAllVideos = async () => {
   });
 };
 
+export const getDatabaseStats = async (): Promise<{ count: number, sizeMB: string }> => {
+  const db: any = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.openCursor();
+
+    let count = 0;
+    let totalSize = 0;
+
+    request.onsuccess = () => {
+      const cursor = request.result;
+      if (cursor) {
+        count++;
+        totalSize += cursor.value.size || 0;
+        cursor.continue();
+      } else {
+        resolve({ count, sizeMB: (totalSize / (1024 * 1024)).toFixed(1) });
+      }
+    };
+
+    request.onerror = () => reject(request.error);
+  });
+};
+
 export const clearDB = async () => {
   const db = await initDB();
   return new Promise((resolve, reject) => {
@@ -252,12 +277,8 @@ export default function App() {
 
   const updateDbStats = async () => {
     try {
-      const all = await getAllVideos();
-      const totalSize = all.reduce((acc, curr) => acc + curr.size, 0);
-      setDbStats({
-        count: all.length,
-        sizeMB: (totalSize / (1024 * 1024)).toFixed(1)
-      });
+      const stats = await getDatabaseStats();
+      setDbStats(stats);
     } catch (e) {
       console.warn('Failed to update DB stats:', e);
     }
