@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { CameraView } from './features/camera/CameraView';
 import { AdminPanel } from './features/admin/AdminPanel';
