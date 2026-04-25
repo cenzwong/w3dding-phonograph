@@ -52,4 +52,27 @@ describe('Database functions', () => {
     const sizes = videos.map(v => v.size).sort();
     expect(sizes).toEqual([1, 2]);
   });
+
+  it('clearDB should remove all saved videos', async () => {
+    // Save some videos first
+    const blob1 = new Blob(['data1'], { type: 'video/mp4' });
+    const blob2 = new Blob(['data2'], { type: 'video/mp4' });
+    await saveVideoToDB(blob1);
+
+    // Add small delay to ensure distinct IDs from Date.now()
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    await saveVideoToDB(blob2);
+
+    // Verify they are saved
+    let videos = await getAllVideos();
+    expect(videos.length).toBe(2);
+
+    // Clear the database
+    await clearDB();
+
+    // Verify it's empty
+    videos = await getAllVideos();
+    expect(videos.length).toBe(0);
+  });
 });
