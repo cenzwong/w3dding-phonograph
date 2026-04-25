@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Camera, Square, CheckCircle, Video, Download, Trash2, ShieldAlert, AlertCircle } from 'lucide-react';
+import { Camera, Square, CheckCircle, Video, Download, Trash2, ShieldAlert, AlertCircle, Mic, MicOff, CameraOff } from 'lucide-react';
 
 // --- Database Wrapper (IndexedDB) ---
 // Architecture note: Wrapping IndexedDB in Promises to ensure async/await compatibility.
@@ -66,6 +66,7 @@ export default function App() {
   const [dbStats, setDbStats] = useState({ count: 0, sizeMB: 0 });
   const [videos, setVideos] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
+  const [hardwareStatus, setHardwareStatus] = useState({ camConnected: false, micConnected: false });
   
   // Refs for media handling
   const videoRef = useRef(null);
@@ -79,17 +80,38 @@ export default function App() {
   // --- Initialization & Hardware Access ---
   const initCamera = async () => {
     try {
-      if (streamRef.current) return;
-      // Request 720p for optimal iPad performance/storage ratio
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: true
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+      // Check if existing stream has active tracks
+      let needsNewStream = !streamRef.current;
+      if (streamRef.current) {
+        const tracks = streamRef.current.getTracks();
+        if (tracks.length === 0 || tracks.some(track => track.readyState === 'ended')) {
+          needsNewStream = true;
+          // Stop old tracks just in case
+          tracks.forEach(track => track.stop());
+        }
       }
+
+      if (needsNewStream) {
+        // Request 720p for optimal iPad performance/storage ratio
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: true
+        });
+        streamRef.current = stream;
+      }
+
+      if (videoRef.current && streamRef.current) {
+        videoRef.current.srcObject = streamRef.current;
+      }
+
+      if (streamRef.current) {
+        const hasVideo = streamRef.current.getVideoTracks().length > 0;
+        const hasAudio = streamRef.current.getAudioTracks().length > 0;
+        setHardwareStatus({ camConnected: hasVideo, micConnected: hasAudio });
+      }
+
     } catch (err) {
+      setHardwareStatus({ camConnected: false, micConnected: false });
       setErrorMsg('請允許相機與麥克風權限以繼續使用。');
       console.error('Camera error:', err);
     }
@@ -119,11 +141,20 @@ export default function App() {
     requestPersist();
     updateDbStats();
     
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        initCamera();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
       clearInterval(timerRef.current);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -289,13 +320,28 @@ export default function App() {
           {/* Camera Container */}
           <div className="relative w-full max-w-4xl aspect-[4/3] md:aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl shadow-black/50 border border-stone-800 ring-4 ring-stone-900">
             <video
-              ref={videoRef}
+              ref={(el) => {
+                videoRef.current = el;
+                if (el && streamRef.current && el.srcObject !== streamRef.current) {
+                  el.srcObject = streamRef.current;
+                }
+              }}
               autoPlay
               muted
               playsInline
               className={`w-full h-full object-cover transition-opacity duration-700 ${mode === 'saving' || mode === 'success' ? 'opacity-30 blur-sm' : 'opacity-100'}`}
             />
             
+            {/* Hardware Status Indicators */}
+            <div className="absolute top-4 right-4 flex gap-2 z-20">
+              <div className={`p-2 rounded-full backdrop-blur-md shadow-lg ${hardwareStatus.camConnected ? 'bg-black/40 text-green-400' : 'bg-red-500/80 text-white'}`}>
+                {hardwareStatus.camConnected ? <Video size={18} /> : <CameraOff size={18} />}
+              </div>
+              <div className={`p-2 rounded-full backdrop-blur-md shadow-lg ${hardwareStatus.micConnected ? 'bg-black/40 text-green-400' : 'bg-red-500/80 text-white'}`}>
+                {hardwareStatus.micConnected ? <Mic size={18} /> : <MicOff size={18} />}
+              </div>
+            </div>
+
             {/* UI Overlays */}
             {mode === 'idle' && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/10 transition-colors">
