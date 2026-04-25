@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { getAllVideos, saveVideoToDB, clearDB, initDB } from './App';
+import { getAllVideos, saveVideoToDB, clearDB, initDB } from '../src/lib/db';
 import 'fake-indexeddb/auto';
 
 describe('initDB', () => {
