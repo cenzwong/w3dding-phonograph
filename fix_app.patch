@@ -1,0 +1,10 @@
+--- App.tsx
++++ App.tsx
+@@ -9,6 +9,9 @@
+ let dbPromise = null;
+
++export const resetDBPromise = () => {
++  dbPromise = null;
++}
++
+ export const initDB = () => {
