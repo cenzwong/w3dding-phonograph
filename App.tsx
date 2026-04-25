@@ -132,7 +132,9 @@ export default function App() {
       if (navigator.storage && navigator.storage.persist) {
         await navigator.storage.persist();
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Failed to request storage persistence:', e);
+    }
   };
 
   useEffect(() => {
@@ -248,7 +250,9 @@ export default function App() {
         count: all.length,
         sizeMB: (totalSize / (1024 * 1024)).toFixed(1)
       });
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Failed to update DB stats:', e);
+    }
   };
 
   const loadAdminVideos = async () => {
