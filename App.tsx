@@ -6,18 +6,26 @@ import { Camera, Square, CheckCircle, Video, Download, Trash2, ShieldAlert, Aler
 const DB_NAME = 'WeddingBoothDB';
 const STORE_NAME = 'videos';
 
+let dbPromise = null;
+
 export const initDB = () => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    request.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-      }
-    };
-  });
+  if (!dbPromise) {
+    dbPromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, 1);
+      request.onerror = () => {
+        dbPromise = null;
+        reject(request.error);
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        }
+      };
+    });
+  }
+  return dbPromise;
 };
 
 export const saveVideoToDB = async (videoBlob) => {
