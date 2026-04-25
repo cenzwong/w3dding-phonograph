@@ -3,10 +3,10 @@ import { Camera, Square, CheckCircle, Video, Download, Trash2, ShieldAlert, Aler
 
 // --- Database Wrapper (IndexedDB) ---
 // Architecture note: Wrapping IndexedDB in Promises to ensure async/await compatibility.
-const DB_NAME = 'WeddingBoothDB';
-const STORE_NAME = 'videos';
+export const DB_NAME = 'WeddingBoothDB';
+export const STORE_NAME = 'videos';
 
-const initDB = () => {
+export const initDB = () => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, 1);
     request.onerror = () => reject(request.error);
@@ -20,7 +20,7 @@ const initDB = () => {
   });
 };
 
-const saveVideoToDB = async (videoBlob) => {
+export const saveVideoToDB = async (videoBlob) => {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([STORE_NAME], 'readwrite');
@@ -37,7 +37,7 @@ const saveVideoToDB = async (videoBlob) => {
   });
 };
 
-const getAllVideos = async () => {
+export const getAllVideos = async () => {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([STORE_NAME], 'readonly');
@@ -48,7 +48,7 @@ const getAllVideos = async () => {
   });
 };
 
-const clearDB = async () => {
+export const clearDB = async () => {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([STORE_NAME], 'readwrite');
