@@ -73,7 +73,5 @@ The application includes a hidden Admin Panel that allows you to monitor storage
 
 1. Navigate to the main recording screen (where you see the camera feed).
 2. Rapidly **click the "WEDDING GUESTBOOK" header title 5 times** within a 2-second window.
-3. A passcode prompt will appear.
-4. Enter the correct `ADMIN_PASSCODE` to gain access to the dashboard.
 
 Once inside, you can view the total space occupied by the videos and click "Export All" to download the backups to your device.
