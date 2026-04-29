@@ -1,5 +1,7 @@
 // --- Database Wrapper (IndexedDB) ---
 // Architecture note: Wrapping IndexedDB in Promises to ensure async/await compatibility.
+import { formatBytesToMB } from './utils/formatters';
+
 const DB_NAME = 'WeddingBoothDB';
 const STORE_NAME = 'videos';
 
@@ -77,7 +79,7 @@ export const getDatabaseStats = async (): Promise<{ count: number, sizeMB: strin
         totalSize += cursor.value.size || 0;
         cursor.continue();
       } else {
-        resolve({ count, sizeMB: (totalSize / (1024 * 1024)).toFixed(1) });
+        resolve({ count, sizeMB: formatBytesToMB(totalSize) });
       }
     };
 
