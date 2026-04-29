@@ -6,3 +6,4 @@ build/
 .env
 *.orig
 *.patch
+coverage/
