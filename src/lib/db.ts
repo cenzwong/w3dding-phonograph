@@ -3,6 +3,13 @@
 const DB_NAME = 'WeddingBoothDB';
 const STORE_NAME = 'videos';
 
+export interface VideoRecord {
+  id: string;
+  timestamp: string;
+  blob: Blob;
+  size: number;
+}
+
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 export const initDB = (): Promise<IDBDatabase> => {
@@ -25,12 +32,12 @@ export const initDB = (): Promise<IDBDatabase> => {
   return dbPromise;
 };
 
-export const saveVideoToDB = async (videoBlob: Blob): Promise<any> => {
+export const saveVideoToDB = async (videoBlob: Blob): Promise<VideoRecord> => {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([STORE_NAME], 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
-    const record = {
+    const record: VideoRecord = {
       id: `wedding_${Date.now()}`,
       timestamp: new Date().toISOString(),
       blob: videoBlob,
@@ -42,7 +49,7 @@ export const saveVideoToDB = async (videoBlob: Blob): Promise<any> => {
   });
 };
 
-export const getAllVideos = async (): Promise<any[]> => {
+export const getAllVideos = async (): Promise<VideoRecord[]> => {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([STORE_NAME], 'readonly');
