@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, Download, Video, Trash2 } from 'lucide-react';
-import { getAllVideos, clearDB } from '../../lib/db';
+import { getAllVideos, clearDB, VideoRecord } from '../../lib/db';
 
 interface AdminPanelProps {
   setMode: (mode: string) => void;
@@ -9,7 +9,7 @@ interface AdminPanelProps {
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ setMode, dbStats, updateDbStats }) => {
-  const [videos, setVideos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<VideoRecord[]>([]);
 
   useEffect(() => {
     loadAdminVideos();
@@ -24,7 +24,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ setMode, dbStats, update
     }
   };
 
-  const downloadVideo = (video: any) => {
+  const downloadVideo = (video: VideoRecord) => {
     const ext = video.blob.type.includes('mp4') ? 'mp4' : 'webm';
     const url = URL.createObjectURL(video.blob);
     const a = document.createElement('a');
