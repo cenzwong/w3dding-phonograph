@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, Download, Video, Trash2 } from 'lucide-react';
 import { getAllVideos, clearDB, VideoRecord } from '../../lib/db';
+import { formatBytesToMB } from '../../lib/utils/formatters';
 
 interface AdminPanelProps {
   setMode: (mode: string) => void;
@@ -91,7 +92,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ setMode, dbStats, update
                   {new Date(video.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}
                 </span>
                 <span className="ml-auto text-xs bg-stone-900 px-2 py-1 rounded">
-                  {(video.size / (1024*1024)).toFixed(1)} MB
+                  {formatBytesToMB(video.size)} MB
                 </span>
               </div>
 
