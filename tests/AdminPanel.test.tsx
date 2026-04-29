@@ -137,7 +137,7 @@ describe('AdminPanel', () => {
     const mockVideos = [
       {
         id: 'video1',
-        timestamp: new Date().getTime(),
+        timestamp: new Date('2023-01-01T12:00:00Z').getTime(),
         size: 1048576,
         blob: new Blob(['data1'], { type: 'video/mp4' }),
       },
@@ -177,13 +177,13 @@ describe('AdminPanel', () => {
     const mockVideos = [
       {
         id: 'video1',
-        timestamp: new Date().getTime(),
+        timestamp: new Date('2023-01-01T12:00:00Z').getTime(), // newer, so it sorts first
         size: 1048576,
         blob: new Blob(['data1'], { type: 'video/mp4' }),
       },
       {
         id: 'video2',
-        timestamp: new Date().getTime(),
+        timestamp: new Date('2023-01-01T11:00:00Z').getTime(), // older
         size: 2048576,
         blob: new Blob(['data2'], { type: 'video/webm' }),
       },
