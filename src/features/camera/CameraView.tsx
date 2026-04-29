@@ -17,7 +17,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
   const [timeLeft, setTimeLeft] = useState(60);
   const [hardwareStatus, setHardwareStatus] = useState({ camConnected: false, micConnected: false });
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -180,7 +180,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
         <video
           ref={(el) => {
             if (videoRef.current !== el) {
-               (videoRef as any).current = el;
+               videoRef.current = el;
             }
             if (el && streamRef.current && el.srcObject !== streamRef.current) {
               el.srcObject = streamRef.current;
