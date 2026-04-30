@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, Download, Video, Trash2 } from 'lucide-react';
+import { ShieldAlert, Download, Video, Trash2, Play, X } from 'lucide-react';
 import { getAllVideos, clearDB, VideoRecord } from '../../lib/db';
 import { formatBytesToMB } from '../../lib/utils/formatters';
 
@@ -11,6 +11,8 @@ interface AdminPanelProps {
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ setMode, dbStats, updateDbStats }) => {
   const [videos, setVideos] = useState<VideoRecord[]>([]);
+  const [previewVideo, setPreviewVideo] = useState<VideoRecord | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadAdminVideos();
@@ -53,6 +55,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ setMode, dbStats, update
       }
     }
   };
+
+  const openPreview = (video: VideoRecord) => {
+    setPreviewVideo(video);
+    setPreviewUrl(URL.createObjectURL(video.blob));
+  };
+
+  const closePreview = () => {
+    setPreviewVideo(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
+  // Cleanup object url if component unmounts while preview is open
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   return (
     <div className="relative z-50 w-full min-h-screen bg-stone-900 p-6 md:p-12 overflow-y-auto">
@@ -98,10 +122,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ setMode, dbStats, update
 
               <div className="mt-auto flex gap-2 pt-2">
                 <button
+                  onClick={() => openPreview(video)}
+                  className="flex-1 bg-stone-700 hover:bg-stone-600 text-white py-2 rounded flex items-center justify-center gap-2 transition-colors text-sm"
+                >
+                  <Play size={16} /> 預覽
+                </button>
+                <button
                   onClick={() => downloadVideo(video)}
                   className="flex-1 bg-stone-700 hover:bg-stone-600 text-white py-2 rounded flex items-center justify-center gap-2 transition-colors text-sm"
                 >
-                  <Download size={16} /> 單獨下載
+                  <Download size={16} /> 下載
                 </button>
               </div>
             </div>
@@ -123,6 +153,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ setMode, dbStats, update
             </button>
         </div>
       </div>
+
+      {previewVideo && previewUrl && (
+        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4">
+          <button
+            onClick={closePreview}
+            className="absolute top-6 right-6 text-stone-400 hover:text-white bg-stone-800/50 hover:bg-stone-800 p-2 rounded-full transition-colors"
+            aria-label="Close preview"
+          >
+            <X size={32} />
+          </button>
+          <div className="w-full max-w-4xl max-h-[80vh] flex items-center justify-center">
+            <video
+              src={previewUrl}
+              controls
+              autoPlay
+              className="max-w-full max-h-[80vh] rounded-lg shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -152,14 +152,18 @@ describe('AdminPanel', () => {
       />
     );
 
+    // Get the specific button inside the video card to avoid conflict with "全部匯出" (Download All)
+    let downloadBtn: HTMLElement;
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /單獨下載/i })).toBeInTheDocument();
+      const buttons = screen.getAllByRole('button', { name: /下載/i });
+      downloadBtn = buttons.find(b => b.textContent?.includes('下載') && !b.textContent?.includes('全部匯出')) as HTMLElement;
+      expect(downloadBtn).toBeInTheDocument();
     });
 
     // Mock anchor click
     const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
-    fireEvent.click(screen.getByRole('button', { name: /單獨下載/i }));
+    fireEvent.click(downloadBtn!);
 
     expect(global.URL.createObjectURL).toHaveBeenCalledWith(mockVideos[0].blob);
     expect(clickSpy).toHaveBeenCalled();
@@ -168,6 +172,47 @@ describe('AdminPanel', () => {
     await waitFor(() => {
       expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('mock-url');
     });
+  });
+
+  it('handles video preview open and close', async () => {
+    const mockVideos = [
+      {
+        id: 'video1',
+        timestamp: new Date('2023-01-01T12:00:00Z').getTime(),
+        size: 1048576,
+        blob: new Blob(['data1'], { type: 'video/mp4' }),
+      },
+    ];
+    (dbLib.getAllVideos as any).mockResolvedValue(mockVideos);
+
+    render(
+      <AdminPanel
+        setMode={mockSetMode}
+        dbStats={{ count: 1, sizeMB: '1.0' }}
+        updateDbStats={mockUpdateDbStats}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /預覽/i })).toBeInTheDocument();
+    });
+
+    // Open preview
+    fireEvent.click(screen.getByRole('button', { name: /預覽/i }));
+
+    expect(global.URL.createObjectURL).toHaveBeenCalledWith(mockVideos[0].blob);
+
+    // Modal should be visible
+    const closeButton = screen.getByRole('button', { name: 'Close preview' });
+    expect(closeButton).toBeInTheDocument();
+    expect(document.querySelector('video')).toBeInTheDocument();
+
+    // Close preview
+    fireEvent.click(closeButton);
+
+    expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('mock-url');
+    expect(screen.queryByRole('button', { name: 'Close preview' })).not.toBeInTheDocument();
+    expect(document.querySelector('video')).not.toBeInTheDocument();
   });
 
   it('handles download all sequential', async () => {
