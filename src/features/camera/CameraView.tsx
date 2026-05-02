@@ -65,7 +65,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
         await (navigator as any).wakeLock.request('screen');
       }
     } catch (err) {
-      console.log('Wake Lock API not supported/failed');
+      console.log('Wake Lock API not supported/failed:', err);
     }
   };
 
@@ -135,6 +135,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
             setTimeLeft(60);
           }, 3000);
         } catch (err) {
+          console.error('Failed to save video:', err);
           setErrorMsg('儲存失敗，請檢查儲存空間！');
           setMode('idle');
         }
@@ -154,6 +155,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
         });
       }, 1000);
     } catch (err) {
+      console.error('Failed to start recording:', err);
       setErrorMsg('無法啟動錄影器，請重啟網頁。');
     }
   };
