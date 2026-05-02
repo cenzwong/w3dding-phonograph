@@ -23,8 +23,8 @@ export const initDB = (): Promise<IDBDatabase> => {
         reject(request.error);
       };
       request.onsuccess = () => resolve(request.result);
-      request.onupgradeneeded = (e: any) => {
-        const db = e.target.result;
+      request.onupgradeneeded = (e: IDBVersionChangeEvent) => {
+        const db = (e.target as IDBOpenDBRequest).result;
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           db.createObjectStore(STORE_NAME, { keyPath: 'id' });
         }
